@@ -1,59 +1,32 @@
-name: Build OpenWrt Firmware
+name: Build OpenWrt
 
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 10 * * 3' # 每周三北京时间18点（UTC时间10点）定时自动编译
-  workflow_dispatch:
+on: [push]
 
 jobs:
-  cleanup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2.4.0
-
-      - name: Clean up old Actions runs
-        run: |
-          gh run list --limit 100 --json databaseId,status,conclusion | jq -r '.[] | select(.status=="completed") | select(.conclusion=="success") | .databaseId' | while read run_id; do gh run delete "$run_id" -y; done
-
-      - name: Clean up old Releases
-        run: |
-          gh release list --limit 100 | awk '{print $1}' | while read release_id; do gh release delete "$release_id" -y; done
-
   build:
     runs-on: ubuntu-latest
-    needs: cleanup
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2.4.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build OpenWrt Firmware
-        run: |
-          mkdir -p output
-          docker build -t openwrt-build .
-          docker run --rm -v $(pwd)/output:/build/output openwrt-build
-          echo "Generated files in output/ directory:"
-          ls -lah output/
-          for file in output/*; do
-            mv "$file" "output/$(basename "$file" | sed 's/^/x86_64-$(date +%Y%m%d)-/')"
-          done
-
-      - name: Set Release Tag
-        id: set_tag
-        run: |
-          TAG="${{ github.run_number }}-x86_64-$(date +'%Y%m%d')"
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Upload firmware to releases
-        uses: softprops/action-gh-release@v1
-        with:
-          files: output/*
-          tag_name: ${{ env.TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/checkout@v4
+    
+    - name: Setup
+      run: |
+        sudo apt-get install -y build-essential libssl-dev python3
+        
+    - name: Apply configs
+      run: |
+        cp config/base.conf .config
+        cat config/plugins.conf >> .config
+        cat config/theme.conf >> .config
+        git apply patches/*.patch
+        
+    - name: Build
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        make -j$(nproc) download
+        make -j$(nproc)
+        
+    - uses: actions/upload-artifact@v4
+      with:
+        name: firmware
+        path: bin/targets/x86/64/*.img.gz
