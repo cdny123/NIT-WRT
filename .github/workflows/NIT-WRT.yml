@@ -170,19 +170,18 @@ jobs:
         name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-    - name: 创建发布标签
+     - name: 创建发布标签
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
+        local_tag_time=$(echo ${{ env.TAG_TIME }} | sed 's/[^a-zA-Z0-9_. -]//g')
+        echo "release_tag=${local_tag_time}" >> $GITHUB_OUTPUT
         touch release.txt
         echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
         echo "管理地址：192.168.6.1" >> release.txt
         echo "默认密码：无密码" >> release.txt
         echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
-      shell: bash {0}
-      continue-on-error: false
 
     - name: 发布新版固件
       uses: softprops/action-gh-release@v2
