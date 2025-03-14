@@ -18,15 +18,13 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
     steps:
     
     - name: 检查项目分支
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4  # 升级到最新稳定版
 
     - name: 清理磁盘空间
-      uses: jlumbroso/free-disk-space@v1
+      uses: jlumbroso/free-disk-space@v1.2.1  # 指定明确版本
       with:
         tool-cache: true        
         android: true
@@ -168,7 +166,7 @@ jobs:
         files: ${{ env.FIRMWARE }}/* 
 
     - name: 清理编译流程
-      uses: Mattraks/delete-workflow-runs@main
+      uses: Mattraks/delete-workflow-runs@v3.1  
       with:
         retain_days: 50
         keep_minimum_runs: 10
