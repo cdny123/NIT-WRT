@@ -3,7 +3,7 @@ name: NIT-WRT
 on: 
   workflow_dispatch:
   schedule:
-    - cron: 20 00 * * *
+    - cron: 20 00 * * 1
 
 env:
   REPO_URL: https://github.com/openwrt/openwrt
@@ -18,14 +18,14 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # ✅ 正确位置和缩进
+    runs-on: ubuntu-22.04  
 
     steps:
     - name: 检查项目分支
       uses: actions/checkout@v4
     
     - name: 清理磁盘空间
-      uses: jlumbroso/free-disk-space@v1.2.1
+      uses: jlumbroso/free-disk-space@main
       with:
         tool-cache: true        
         android: true
