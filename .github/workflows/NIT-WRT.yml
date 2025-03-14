@@ -170,9 +170,9 @@ jobs:
         name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-   - name: 创建发布标签
-     id: tag
-     run: |
+    - name: 创建发布标签
+      id: tag
+      run: |
        echo "UPLOAD_RELEASE: ${{ env.UPLOAD_RELEASE }}"
        echo "Cancelled: ${{ cancelled() }}"
     if [ "${{ env.UPLOAD_RELEASE }}" = "true" ] && [ "${{ cancelled() }}" = "false" ]; then
