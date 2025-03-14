@@ -1,7 +1,0 @@
-# 软件源配置
-
-src-git packages https://git.openwrt.org/feed/packages.git^0f3b6a9
-src-git luci https://git.openwrt.org/project/luci.git^471c9a3
-src-git routing https://git.openwrt.org/feed/routing.git^1d27b8c
-src-git telephony https://git.openwrt.org/feed/telephony.git^e5c53e8
-src-git custom https://github.com/cdny123/openwrt-package1.git
