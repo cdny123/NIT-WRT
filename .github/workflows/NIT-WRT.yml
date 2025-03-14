@@ -196,13 +196,13 @@ jobs:
         files: ${{ env.FIRMWARE }}/* 
 
     - name: 清理编译流程
-      uses: Mattraks/delete-workflow-runs@v3.1  
+      uses: Mattraks/delete-workflow-runs@main 
       with:
         retain_days: 50
         keep_minimum_runs: 10
 
     - name: 删除旧版固件
-      uses: dev-drprasad/delete-older-releases@v0.2.0
+      uses: dev-drprasad/delete-older-releases@master
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
         keep_latest: 10
