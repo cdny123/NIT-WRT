@@ -170,22 +170,22 @@ jobs:
         name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-    - name: 创建发布标签
-      id: tag
-      run: |
+   - name: 创建发布标签
+     id: tag
+     run: |
        echo "UPLOAD_RELEASE: ${{ env.UPLOAD_RELEASE }}"
        echo "Cancelled: ${{ cancelled() }}"
-    if [ "${{ env.UPLOAD_RELEASE }}" = "true" ] && [ "${{ cancelled() }}" = "false" ]; then
-      echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
-      touch release.txt
-      echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
-      echo "管理地址：192.168.6.1" >> release.txt
-      echo "默认密码：无密码" >> release.txt
-      echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
-      echo "status=success" >> $GITHUB_OUTPUT
-    else
-      echo "Skipping tag creation."
-    fi
+     if [ "${{ env.UPLOAD_RELEASE }}" = "true" ] && [ "${{ cancelled() }}" = "false" ]; then
+       echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
+       touch release.txt
+       echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
+       echo "管理地址：192.168.6.1" >> release.txt
+       echo "默认密码：无密码" >> release.txt
+       echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
+       echo "status=success" >> $GITHUB_OUTPUT
+     else
+       echo "Skipping tag creation."
+     fi
 
     - name: 发布新版固件
       uses: softprops/action-gh-release@v2
