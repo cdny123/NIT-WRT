@@ -164,7 +164,7 @@ jobs:
       continue-on-error: false
 
     - name: 打包上传固件
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
