@@ -11,7 +11,14 @@ jobs:
     runs-on: Ubuntu-22.04
     name: delete-releases-runs
     steps:
-    
+      - name: 输出 REPO_TOKEN 是否存在
+        run: |
+          if [ -z "${{ secrets.REPO_TOKEN }}" ]; then
+            echo "REPO_TOKEN 为空，检查 Secret 是否正确配置"
+          else
+            echo "REPO_TOKEN 存在"
+          fi
+
       - name: 删除所有releases及标签
         uses: dev-drprasad/delete-older-releases@v0.2.0
         with:
@@ -19,6 +26,4 @@ jobs:
           keep_latest: 1
           delete_tags: true
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }} 
-      
-     
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
