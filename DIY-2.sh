@@ -22,6 +22,7 @@ plugins=(
     "luci-app-quickstart"
     "luci-app-diskman"
     "luci-app-poweroff"
+    "luci-app-partexp"
     "luci-app-netdata"
     "luci-app-store"
     "luci-app-HomeAssistant"
