@@ -15,4 +15,4 @@ git clone https://github.com/sirpdboy/luci-app-partexp.git package/luci-app-part
 
 # 添加主题
 git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
-git clone https://github.com/guangguangzhu/luci-theme-kucat.git package/luci-theme-kucat
+git clone https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat
