@@ -120,8 +120,8 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       with:
         limit-access-to-actor: true
-        timeout: 30m
-        ports: 22
+        connect-timeout-seconds: 1800  # 30分钟超时
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: 下载固件dl库
       id: package
