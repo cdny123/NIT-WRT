@@ -133,13 +133,7 @@ jobs:
         find dl -size -1024c -exec rm -f {} \;
       shell: bash {0}
       continue-on-error: false
-
-    - name: 移除 dnsmasq
-      run: opkg remove dnsmasq
-
-    - name: 安装 dnsmasq-full
-      run: opkg install dnsmasq-full
-        
+            
     - name: 正在编译固件
       id: compile
       run: |
