@@ -116,8 +116,12 @@ jobs:
       continue-on-error: false
 
     - name: SSH远程连接（make menuconfig）
-      if: env.SSH_ACTION == 'true'
-      uses: danshui-git/debugger-action@main
+      if: github.event.inputs.SSH_ACTION == 'true'
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
+        timeout: 30m
+        ports: 22
       
     - name: 下载固件dl库
       id: package
