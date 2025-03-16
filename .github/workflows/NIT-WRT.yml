@@ -1,16 +1,18 @@
 name: NIT-WRT
 
-on: 
+on:
   workflow_dispatch:
-  schedule:
-    - cron: 20 00 * * 1
+    inputs:
+        SSH_ACTION:
+        description: 'SSH远程配置固件'
+        required: false
+        default: 'false'
+        type: boolean
+        
+# 定时触发开启开始编译(把下面两个#去掉开启,时间设置请看定时开启编译说明)
+#  schedule:
+#   - cron: 35 18 * * 1
   
-  SSH_ACTION:
-    description: 'SSH远程配置固件'
-    required: false
-    default: 'false'
-    type: boolean
-
 env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-24.10
