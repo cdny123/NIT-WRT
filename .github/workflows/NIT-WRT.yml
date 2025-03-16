@@ -5,11 +5,11 @@ on:
   schedule:
     - cron: 20 00 * * 1
   
-   SSH_ACTION:
-     description: 'SSH远程配置固件'
-     required: false
-     default: 'false'
-     type: boolean
+  SSH_ACTION:
+    description: 'SSH远程配置固件'
+    required: false
+    default: 'false'
+    type: boolean
 
 env:
   REPO_URL: https://github.com/openwrt/openwrt
