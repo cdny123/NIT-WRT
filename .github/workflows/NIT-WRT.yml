@@ -108,6 +108,10 @@ jobs:
       shell: bash {0}
       continue-on-error: false
 
+    - name: SSH远程连接（make menuconfig）
+      if: env.SSH_ACTION == 'true'
+      uses: danshui-git/debugger-action@main
+      
     - name: 下载固件dl库
       id: package
       run: |
