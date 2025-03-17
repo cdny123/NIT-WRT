@@ -123,12 +123,9 @@ jobs:
       with:
         limit-access-to: ${{ github.actor }}
         # 高级安全设置
-        ssh-password: ${{ secrets.DEBUG_PASSWORD || 'openwrt123' }}
+        ssh-password: ${{ secrets.DEBUG_PASSWORD || 'openwrt' }}
         session-timeout: 60
 
-    - name: 打印 SSH 连接信息
-      run: echo "SSH 连接已启动"
-      
     - name: 下载固件dl库
       id: package
       run: |
