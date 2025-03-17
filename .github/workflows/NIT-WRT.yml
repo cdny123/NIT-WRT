@@ -117,11 +117,14 @@ jobs:
       continue-on-error: false
 
     - name: SSH 连接到 Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: github.event.inputs.ssh == 'true'
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.ssh_enable == 'true' }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 30
+      with:
+        limit-access-to: ${{ github.actor }}
+        # 高级安全设置
+        ssh-password: ${{ secrets.DEBUG_PASSWORD || 'openwrt123' }}
+        session-timeout: 60
 
     - name: 打印 SSH 连接信息
       run: echo "SSH 连接已启动"
