@@ -3,10 +3,10 @@ name: NIT-WRT
 on:
   workflow_dispatch:
     inputs:
-      SSH_ACTION:
-        description: 'SSH远程配置固件'
-        required: false
-        default: 'false'
+      ssh_debug:
+        description: '启用SSH调试（需要手动确认）'
+        required: false 
+        default: false
         type: boolean
         
   # 定时触发开启开始编译
@@ -57,6 +57,22 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+    - name: 启用SSH调试会话
+      if: ${{ inputs.ssh_debug == true }}
+      uses: mxschmitt/action-tmate@v3
+      with:
+        # 强制保持会话直到手动退出
+        run: sleep infinity
+        # 增强安全配置
+        ssh-password: ${{ secrets.SSH_PASSWORD }}
+        limit-access-to: ${{ github.actor }}
+        session-timeout: 360
+        # 禁用非必要功能
+        disable-sftp: true
+        disable-web: false
+        # 自定义提示信息
+        banner: "WARNING: Unauthorized access to this system is prohibited!"
+        
     - name: 安装编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -115,16 +131,6 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P2_SH
       shell: bash {0}
       continue-on-error: false
-
-    - name: SSH 连接到 Actions
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.ssh_enable == 'true' }}
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 30
-      with:
-        limit-access-to: ${{ github.actor }}
-        # 高级安全设置
-        ssh-password: ${{ secrets.DEBUG_PASSWORD || 'openwrt' }}
-        session-timeout: 60
 
     - name: 下载固件dl库
       id: package
