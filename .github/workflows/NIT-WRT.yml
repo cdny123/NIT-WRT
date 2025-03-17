@@ -117,17 +117,14 @@ jobs:
       continue-on-error: false
 
     - name: SSH 连接到 Actions
-      uses: P3TERX/ssh2actions@main
+      uses: P3TERX/ssh2actions@v1.0.0
       if: github.event.inputs.ssh == 'true'
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd openwrt
-          make menuconfig
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+    - name: 打印 SSH 连接信息
+      run: echo "SSH 连接已启动"
       
     - name: 下载固件dl库
       id: package
