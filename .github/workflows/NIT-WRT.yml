@@ -116,12 +116,12 @@ jobs:
       continue-on-error: false
 
     - name: SSH远程连接（make menuconfig）
-      if: github.event.inputs.SSH_ACTION == 'true'
-      uses: mxschmitt/action-tmate@v3
-      with:
-        limit-access-to-actor: true
-        connect-timeout-seconds: 1800 
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "SSH 连接信息："
+        echo "Host: ${{ runner.ip }}"
+        echo "Port: 22"
+        echo "User: runner"
+        echo "Password: ${{ secrets.SSH_PASSWORD }}"
       
     - name: 下载固件dl库
       id: package
