@@ -2,6 +2,7 @@
 # 设置默认主题
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' .config
 echo "CONFIG_PACKAGE_luci-theme-argon=y" >> .config
+echo "CONFIG_PACKAGE_luci-theme-infinityfreedom-ng=y" >> .config
 
 # 启用插件
 plugins=(
