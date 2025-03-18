@@ -26,7 +26,7 @@ plugins=(
     "luci-app-partexp"
     "luci-app-netdata"
     "luci-app-store"
-    "luci-app-HomeAssistant"
+    "luci-app-homeassistant"
 )
 
 for pkg in "${plugins[@]}"; do
