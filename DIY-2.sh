@@ -33,6 +33,15 @@ for pkg in "${plugins[@]}"; do
     echo "CONFIG_PACKAGE_${pkg}=y" >> .config
 done
 
+# 更换固件内核为 6.6
+echo "CONFIG_LINUX_6_6=y" >> .config
+echo "CONFIG_LINUX_6_6_USE_LATEST=y" >> .config
+echo "CONFIG_DEFAULT_LINUX_6_6=y" >> .config
+
+# 个性签名,默认增加年月日[$(TZ=UTC-8 date "+%Y.%m.%d")]
+export Customized_Information="04543473 $(TZ=UTC-8 date "+%Y.%m.%d")"
+echo "CONFIG_CUSTOMIZED_INFORMATION=\"$Customized_Information\"" >> .config
+
 # 网络优化配置
 echo "CONFIG_PACKAGE_kmod-tcp-bbr=y" >> .config
 echo "CONFIG_PACKAGE_kmod-fs-antfs=y" >> .config
