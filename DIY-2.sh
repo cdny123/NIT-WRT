@@ -7,7 +7,7 @@ echo "CONFIG_PACKAGE_luci-theme-infinityfreedom-ng=y" >> .config
 # 启用插件
 plugins=(
     "luci-app-dockerman"
-    "luci-app-AdGuardHome"
+    "luci-app-adguardhome"
     "luci-app-oaf"
     "luci-app-ddnsto"
     "luci-app-mosdns"
