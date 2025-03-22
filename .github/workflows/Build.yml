@@ -71,7 +71,7 @@ jobs:
           make -j$(nproc) V=s
 
       - name: Upload firmware to Actions artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3  # Ensure the version is specified
         with:
           name: openwrt-firmware
           path: openwrt/bin    
