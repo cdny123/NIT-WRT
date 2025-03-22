@@ -1,0 +1,77 @@
+name: OpenWrt Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '选择编译分支'
+        required: true
+        default: 'openwrt-24.10'
+        type: choice
+        options:
+          - openwrt-24.10
+          - openwrt-23.05
+      device:
+        description: '选择设备架构'
+        required: true
+        default: 'x86-64'
+        type: choice
+        options:
+          - x86-64
+          - r3g
+      ssh:
+        description: '启用 SSH 调试'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
+
+      - name: Clone OpenWrt source
+        run: |
+          git clone -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
+          cd openwrt
+          cp -r ../configs/${{ github.event.inputs.device }}/.config .
+          cp -r ../configs/${{ github.event.inputs.device }}/feeds.conf.default .
+
+      - name: Run diy-part1.sh
+        run: |
+          cd openwrt
+          ../diy-part1.sh
+
+      - name: Update feeds
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Run diy-part2.sh
+        run: |
+          cd openwrt
+          ../diy-part2.sh
+
+      - name: Configure OpenWrt
+        run: |
+          cd openwrt
+          make defconfig
+
+      - name: Build OpenWrt
+        run: |
+          cd openwrt
+          make -j$(nproc) V=s
+
+      - name: Upload firmware to Actions artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: openwrt-firmware
+          path: openwrt/bin    
