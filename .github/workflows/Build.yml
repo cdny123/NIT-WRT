@@ -65,7 +65,7 @@ jobs:
       - name: Run diy-part2.sh
         run: |
           cd openwrt
-          chmod +x ../diy-part1.sh
+          chmod +x ../diy-part2.sh  
           ../diy-part2.sh
 
       - name: Configure OpenWrt
