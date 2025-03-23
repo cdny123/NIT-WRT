@@ -1,4 +1,5 @@
 src-git base https://git.openwrt.org/openwrt/openwrt.git
+src-git base2 https://another-url.git  # 修改源名称为 'base2'
 src-git luci https://git.openwrt.org/project/luci.git
 src-git packages https://git.openwrt.org/feed/packages.git
 src-git routing https://git.openwrt.org/feed/routing.git
@@ -8,4 +9,4 @@ src-git small https://github.com/kenzok8/small
 src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main
 src-git netdata https://github.com/sirpdboy/luci-app-netdata.git master
 src-git adguardhome https://github.com/rufengsuixing/luci-app-adguardhome.git master
-src-git openclash https://github.com/vernesong/OpenClash.git master    
+src-git openclash https://github.com/vernesong/OpenClash.git master
