@@ -14,7 +14,7 @@ on:
       device:
         description: '选择设备架构'
         required: true
-        default: 'x86-64'
+        default: 'x86_64'
         type: choice
         options:
           - x86-64
@@ -42,7 +42,7 @@ jobs:
           git clone -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
           cd openwrt
           # 根据设备架构选择正确的配置文件路径
-          if [ "${{ github.event.inputs.device }}" == "x86-64" ]; then
+          if [ "${{ github.event.inputs.device }}" == "x86_64" ]; then
             cp -r ../configs/x86/.config .
             cp -r ../configs/x86/feeds.conf.default .
           elif [ "${{ github.event.inputs.device }}" == "r3g" ]; then
