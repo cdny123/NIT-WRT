@@ -41,8 +41,6 @@ jobs:
         run: |
           git clone -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
           cd openwrt
-           cp -r ../configs/${{ github.event.inputs.device }}/.config .
-           cp -r ../configs/${{ github.event.inputs.device }}/feeds.conf.default .
           # 根据设备架构选择正确的配置文件路径
           if [ "${{ github.event.inputs.device }}" == "x86-64" ]; then
             cp -r ../configs/x86/.config .
