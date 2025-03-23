@@ -1,9 +1,10 @@
-src-git base https://git.openwrt.org/openwrt/openwrt.git
-src-git base2 https://another-url.git  # 修改源名称为 'base2'
-src-git luci https://git.openwrt.org/project/luci.git
-src-git packages https://git.openwrt.org/feed/packages.git
-src-git routing https://git.openwrt.org/feed/routing.git
-src-git telephony https://git.openwrt.org/feed/telephony.git
+src-include defaults feeds.conf.default
+src-git third_party https://github.com/linkease/istore-packages.git;main
+src-git diskman https://github.com/jjm2473/luci-app-diskman.git;dev
+src-git oaf https://github.com/jjm2473/OpenAppFilter.git;dev4
+src-git linkease_nas https://github.com/linkease/nas-packages.git;master
+src-git linkease_nas_luci https://github.com/linkease/nas-packages-luci.git;main
+src-git jjm2473_apps https://github.com/jjm2473/openwrt-apps.git;main
 src-git kenzo https://github.com/kenzok8/openwrt-packages
 src-git small https://github.com/kenzok8/small
 src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main
