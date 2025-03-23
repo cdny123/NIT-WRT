@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 添加APP插件
-git clone https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat
+# git clone https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat
 # git clone https://github.com/lq-wq/luci-app-quickstart.git package/luci-app-quickstart
 git clone https://github.com/sirpdboy/luci-app-lucky.git package/lucky
 git clone https://github.com/sirpdboy/luci-app-partexp.git package/luci-app-partexp
