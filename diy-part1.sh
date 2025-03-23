@@ -5,7 +5,7 @@
 # git clone https://github.com/lq-wq/luci-app-quickstart.git package/luci-app-quickstart
 git clone https://github.com/sirpdboy/luci-app-lucky.git package/lucky
 # git clone https://github.com/sirpdboy/luci-app-partexp.git package/luci-app-partexp
-git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter
+# git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter
 
 # 添加alist插件
 # 需要 golang 1.22.x 或最新版本 (修复了 OpenWrt 旧分支的 build)
