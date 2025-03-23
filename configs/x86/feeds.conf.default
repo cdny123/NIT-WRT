@@ -1,4 +1,4 @@
-src-git <source_name> <source_url>
+src-git base https://git.openwrt.org/openwrt/openwrt.git;openwrt-24.10
 src-git base https://git.openwrt.org/openwrt/openwrt.git
 src-git luci https://git.openwrt.org/project/luci.git
 src-git packages https://git.openwrt.org/feed/packages.git
