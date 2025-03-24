@@ -70,20 +70,10 @@ jobs:
           ../diy-part2.sh
 
       - name: SSH远程连接（make menuconfig）
-        if: ${{ inputs.ssh_debug == true }}
+        if: ${{ github.event.inputs.SSH_ACTION == 'true' }}
         uses: mxschmitt/action-tmate@v3
         with:
-          # 强制保持会话直到手动退出
           run: sleep infinity
-          # 增强安全配置
-          ssh-password: ${{ secrets.SSH_PASSWORD }}
-          limit-access-to: ${{ github.actor }}
-          session-timeout: 360
-          # 禁用非必要功能
-          disable-sftp: true
-          disable-web: false
-          # 自定义提示信息
-          banner: "WARNING: Unauthorized access to this system is prohibited!"
       
       - name: 配置OpenWrt
         run: |
