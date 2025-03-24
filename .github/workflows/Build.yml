@@ -99,8 +99,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.inputs.branch }}-${{ github.event.inputs.device }}-${{ github.run_number }}
-          name: OpenWrt Firmware Release ${{ github.event.inputs.branch }}-${{ github.event.inputs.device }}-${{ github.run_number }}
+          tag_name: openwrt-24.10-${{ github.event.inputs.device }}-${{ github.event.inputs.branch }}-${{ github.event.inputs.date }}
+          name: OpenWrt Firmware Release openwrt-24.10-${{ github.event.inputs.device }}-${{ github.event.inputs.branch }}-${{ github.event.inputs.date }}
           body: |
             This is a release of OpenWrt firmware for ${{ github.event.inputs.device }} using ${{ github.event.inputs.branch }} branch.
             Build number: ${{ github.run_number }}
@@ -109,4 +109,4 @@ jobs:
           files: |
             openwrt/bin/**
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
