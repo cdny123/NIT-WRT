@@ -75,15 +75,24 @@ jobs:
         with:
           run: sleep infinity
       
+      - name: 安装依赖
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          rm -rf feeds/*.tmp
+          
       - name: 配置OpenWrt
         run: |
           cd openwrt
           make defconfig
-
+          rm -rf tmp/*
+      
       - name: 构建OpenWrt
         run: |
           cd openwrt
-          make -j$(nproc) V=s
+          make 
+          rm -rf tmp/*
 
       - name: 创建发布
         id: create_release
