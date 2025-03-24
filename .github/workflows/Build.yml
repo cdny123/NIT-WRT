@@ -91,7 +91,7 @@ jobs:
       - name: 构建OpenWrt
         run: |
           cd openwrt
-          make 
+          make -j1 V=s 
           rm -rf tmp/*
 
       - name: 创建发布
