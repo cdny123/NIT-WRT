@@ -17,7 +17,7 @@ on:
         default: 'x86_64'
         type: choice
         options:
-          - x86-64
+          - x86_64
           - r3g
       
       SSH_ACTION:
