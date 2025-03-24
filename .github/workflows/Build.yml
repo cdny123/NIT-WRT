@@ -19,9 +19,10 @@ on:
         options:
           - x86-64
           - r3g
-      ssh:
-        description: '启用 SSH 调试'
-        required: true
+      
+      SSH_ACTION:
+        description: 'SSH远程配置固件'
+        required: false
         default: 'false'
         type: boolean
 
@@ -32,12 +33,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up environment
+      - name: 建立环境
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc-s1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
 
-      - name: Clone OpenWrt source
+      - name: 克隆源代码
         run: |
           git clone -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
           cd openwrt
@@ -50,35 +51,39 @@ jobs:
             cp -r ../configs/r3g/feeds.conf.default .
           fi
 
-      - name: Run diy-part1.sh
+      - name: 运行diy-part1.sh
         run: |
           cd openwrt
           chmod +x ../diy-part1.sh
           ../diy-part1.sh
 
-      - name: Update feeds
+      - name: 更新feeds
         run: |
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Run diy-part2.sh
+      - name: 运行diy-part2.sh
         run: |
           cd openwrt
           chmod +x ../diy-part2.sh  
           ../diy-part2.sh
 
-      - name: Configure OpenWrt
+      - name: SSH远程连接（make menuconfig）
+        if: env.SSH_ACTION == 'true'
+        uses: danshui-git/debugger-action@main
+      
+      - name: 配置OpenWrt
         run: |
           cd openwrt
           make defconfig
 
-      - name: Build OpenWrt
+      - name: 构建OpenWrt
         run: |
           cd openwrt
           make -j$(nproc) V=s
 
-      - name: Create Release
+      - name: 创建发布
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
