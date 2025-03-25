@@ -1,4 +1,6 @@
 #!/bin/bash
+#chmod +x disk_space_cleanup.sh
+#./disk_space_cleanup.sh
 
 # 清理 apt 缓存
 echo "开始清理 apt 缓存..."
