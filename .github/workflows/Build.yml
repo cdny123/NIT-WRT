@@ -33,6 +33,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: 清理磁盘空间
+        run: |
+          sudo apt-get clean
+          docker system prune -a -f
+          sudo rm -rf /var/lib/docker
+          sudo find /var/log -type f -name "*.log" -exec truncate -s 0 {} \;
+          sudo rm -rf /tmp/*
+          sudo rm -rf /var/tmp/*
+          df -h
+        
       - name: 建立环境
         run: |
           sudo apt-get update
