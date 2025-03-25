@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# 添加软件源到 feeds.conf.default 文件
+sed -i '1i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
+sed -i '2i src-git small https://github.com/kenzok8/small' feeds.conf.default
+./scripts/feeds update -a && rm -rf feeds/luci/applications/luci-app-mosdns
+rm -rf feeds/packages/net/{alist,adguardhome,mosdns,xray*,v2ray*,v2ray*,sing*,smartdns}
+rm -rf feeds/packages/utils/v2dat
+rm -rf feeds/packages/lang/golang
+git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
+./scripts/feeds install -a
+
 # 添加APP插件
 # git clone https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat
 # git clone https://github.com/lq-wq/luci-app-quickstart.git package/luci-app-quickstart
