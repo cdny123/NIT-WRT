@@ -34,14 +34,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 清理磁盘空间
-        run: |
-          sudo apt-get clean
-          docker system prune -a -f
-          sudo rm -rf /var/lib/docker
-          sudo find /var/log -type f -name "*.log" -exec truncate -s 0 {} \;
-          sudo rm -rf /tmp/*
-          sudo rm -rf /var/tmp/*
-          df -h
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true        
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
         
       - name: 建立环境
         run: |
@@ -104,6 +104,10 @@ jobs:
           make -j1 V=s 
           rm -rf tmp/*
 
+      - name: 检查磁盘空间
+        if: (!cancelled())
+        run: df -hT
+      
       - name: 创建发布
         id: create_release
         uses: softprops/action-gh-release@v1
