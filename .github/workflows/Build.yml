@@ -43,6 +43,12 @@ jobs:
           large-packages: true
           swap-storage: true
         
+      - name: 检查磁盘空间
+        run: df -h
+
+      - name: 检查内存使用情况
+        run: free -h
+        
       - name: 建立环境
         run: |
           sudo apt-get update
@@ -90,12 +96,8 @@ jobs:
         id: compile
         run: |
           cd openwrt
-          make V=s -j2
+          make V=s -j2 || { echo 'Build failed'; exit 1; }
 
-      - name: 检查磁盘空间
-        if: always()
-        run: df -hT
-      
       - name: 创建发布
         id: create_release
         uses: softprops/action-gh-release@v1
