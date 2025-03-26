@@ -67,12 +67,6 @@ jobs:
           chmod +x ../diy-part1.sh
           ../diy-part1.sh
 
-      - name: 更新feeds
-        run: |
-          cd openwrt
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
       - name: 运行diy-part2.sh
         run: |
           cd openwrt
@@ -80,12 +74,12 @@ jobs:
           ../diy-part2.sh
 
       - name: SSH远程连接（make menuconfig）
-        if: ${{ github.event.inputs.SSH_ACTION == 'true' }}
+        if: github.event.inputs.SSH_ACTION == 'true'
         uses: mxschmitt/action-tmate@v3
         with:
           run: sleep infinity
       
-      - name: 安装依赖
+      - name: 更新feeds和安装依赖
         run: |
           cd openwrt
           ./scripts/feeds update -a
@@ -99,7 +93,7 @@ jobs:
           make V=s -j2
 
       - name: 检查磁盘空间
-        if: (!cancelled())
+        if: always()
         run: df -hT
       
       - name: 创建发布
