@@ -112,46 +112,46 @@ jobs:
           path: openwrt/build.log
 
       - name: 打包上传固件
-      uses: actions/upload-artifact@main
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
+        uses: actions/upload-artifact@main
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        with:
+          name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+          path: ${{ env.FIRMWARE }}
 
-    - name: 创建发布标签
-      id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      run: |
-        echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
-        touch release.txt
-        echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
-        echo "管理地址：192.168.6.1" >> release.txt
-        echo "默认密码：无密码" >> release.txt
-        echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
-        echo "status=success" >> $GITHUB_OUTPUT
+      - name: 创建发布标签
+        id: tag
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        run: |
+          echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
+          touch release.txt
+          echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
+          echo "管理地址：192.168.6.1" >> release.txt
+          echo "默认密码：无密码" >> release.txt
+          echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
+          echo "status=success" >> $GITHUB_OUTPUT
      
-    - name: 发布新版固件
-      uses: softprops/action-gh-release@v2
-      if: steps.tag.outputs.status == 'success' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        name: ${{ env.FILE_TIME }} - NIT-WRT
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body_path: release.txt
-        files: ${{ env.FIRMWARE }}/* 
+      - name: 发布新版固件
+        uses: softprops/action-gh-release@v2
+        if: steps.tag.outputs.status == 'success' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: ${{ env.FILE_TIME }} - NIT-WRT
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          body_path: release.txt
+          files: ${{ env.FIRMWARE }}/* 
 
-    - name: 清理编译流程
-      uses: Mattraks/delete-workflow-runs@main 
-      with:
-        retain_days: 10
-        keep_minimum_runs: 2
+      - name: 清理编译流程
+        uses: Mattraks/delete-workflow-runs@main 
+        with:
+          retain_days: 10
+          keep_minimum_runs: 2
 
-    - name: 删除旧版固件
-      uses: dev-drprasad/delete-older-releases@master
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 5
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
+      - name: 删除旧版固件
+        uses: dev-drprasad/delete-older-releases@master
+        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+        with:
+          keep_latest: 5
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
