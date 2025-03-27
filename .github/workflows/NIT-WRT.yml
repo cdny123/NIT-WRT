@@ -1,4 +1,4 @@
-name: OpenWrt Build
+name: NIT-WRT
 
 on:
   workflow_dispatch:
