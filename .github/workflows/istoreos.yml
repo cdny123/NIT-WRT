@@ -9,8 +9,8 @@ on:
         default: 'istoreos-24.10'
         type: choice
         options:
-          - openwrt-24.10
-          - openwrt-23.05
+          - istoreos-24.10
+          - istoreos-23.05
       device:
         description: '选择设备架构'
         required: true
