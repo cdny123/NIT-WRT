@@ -53,12 +53,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses-dev make4.1+ perl python3.7+ which grep libc-dev asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc-s1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
+          if [ $? -ne 0 ]; then
+            echo "依赖安装失败"
+            exit 1
+          fi
+        
       - name: 克隆源代码
         run: |
           git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
@@ -77,12 +76,20 @@ jobs:
           cd openwrt
           chmod +x ../diy-part1.sh
           ../diy-part1.sh
+          if [ $? -ne 0 ]; then
+            echo "diy-part1.sh 运行失败"
+            exit 1
+          fi
 
       - name: 运行diy-part2.sh
         run: |
           cd openwrt
           chmod +x ../diy-part2.sh  
           ../diy-part2.sh
+          if [ $? -ne 0 ]; then
+            echo "diy-part2.sh 运行失败"
+            exit 1
+          fi
 
       - name: SSH远程连接（make menuconfig）
         if: github.event.inputs.SSH_ACTION == 'true'
@@ -94,15 +101,31 @@ jobs:
         run: |
           cd openwrt
           ./scripts/feeds update -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 更新失败"
+            exit 1
+          fi
           ./scripts/feeds install -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 安装失败"
+            exit 1
+          fi
           make defconfig
+          if [ $? -ne 0 ]; then
+            echo "make defconfig 失败"
+            exit 1
+          fi
             
       - name: 编译固件
         id: compile
         run: |
           cd openwrt
-          make V=s -j2 > build.log || { echo 'Build failed'; cat build.log; exit 1; }
-        continue-on-error: true
+          make V=s -j2 > build.log
+          if [ $? -ne 0 ]; then
+            echo 'Build failed'
+            cat build.log
+            exit 1
+          fi
 
       - name: 上传生成日志
         if: failure()
