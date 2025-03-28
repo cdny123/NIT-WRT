@@ -106,7 +106,7 @@ jobs:
 
       - name: 上传生成日志
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: build-log
           path: openwrt/build.log
