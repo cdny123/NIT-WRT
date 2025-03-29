@@ -192,7 +192,7 @@ jobs:
             exit 1
           fi
           ./scripts/feeds install -a
-          if [ $? -ne 0 ]; then
+          if [ $? -ne 0 ];then
             echo "feeds 安装失败"
             exit 1
           fi
