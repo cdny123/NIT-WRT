@@ -176,6 +176,10 @@ jobs:
             echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录未生成，手动创建中..."
             mkdir -p staging_dir/target-x86_64_musl/root-x86/boot
           fi
+          if [ ! -d "staging_dir/target-x86_64_musl/image/grub2" ]; then
+            echo "错误: staging_dir/target-x86_64_musl/image/grub2 目录未生成，手动创建中..."
+            mkdir -p staging_dir/target-x86_64_musl/image/grub2
+          fi
     
       - name: SSH远程连接（make menuconfig）
         if: github.event.inputs.SSH_ACTION == 'true'
@@ -248,4 +252,4 @@ jobs:
           name: ${{ env.FILE_TIME }} - NIT-WRT
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
-          files: ${{ env.FIRMWARE }}/* 
+          files: ${{ env.FIRMWARE }}/*
