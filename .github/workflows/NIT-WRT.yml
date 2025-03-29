@@ -59,9 +59,34 @@ jobs:
             exit 1
           fi
         
+      - name: 检查磁盘空间
+        run: |
+          DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+          if [ $DISK_USAGE -gt 90 ]; then
+            echo "磁盘空间不足，当前使用率: $DISK_USAGE%"
+            exit 1
+          fi
+      
       - name: 克隆源代码
         run: |
-          git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
+          MAX_ATTEMPTS=3
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            rm -rf openwrt
+            git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              echo "克隆失败，第 $ATTEMPT 次重试..."
+              sleep 5
+            fi
+          done
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "克隆失败，达到最大重试次数"
+            exit 1
+          fi
           cd openwrt
           # 根据设备架构选择正确的配置文件路径
           if [ "${{ github.event.inputs.device }}" == "x86_64" ]; then
@@ -71,11 +96,6 @@ jobs:
             cp -r ../configs/r3g/.config .
             cp -r ../configs/r3g/feeds.conf.default .
           fi
-          # 输出配置文件内容进行检查
-          echo ".config 文件内容:"
-          cat .config
-          echo "feeds.conf.default 文件内容:"
-          cat feeds.conf.default
     
       - name: 更新feeds和安装依赖
         run: |
@@ -100,7 +120,55 @@ jobs:
             echo "make defconfig 失败"
             exit 1
           fi
-                
+          
+      - name: 运行diy-part1.sh
+        run: |
+          cd openwrt
+          chmod +x ../diy-part1.sh
+          echo "开始执行 diy-part1.sh"
+          ../diy-part1.sh
+          if [ $? -ne 0 ]; then
+            echo "diy-part1.sh 运行失败"
+            exit 1
+          fi
+          echo "diy-part1.sh 执行完成"
+
+      - name: 运行diy-part2.sh
+        run: |
+          cd openwrt
+          chmod +x ../diy-part2.sh
+          echo "开始执行 diy-part2.sh"
+          ../diy-part2.sh
+          if [ $? -ne 0 ]; then
+            echo "diy-part2.sh 运行失败"
+            exit 1
+          fi
+          echo "diy-part2.sh 执行完成"
+
+      - name: 更新feeds和安装依赖
+        run: |
+          cd openwrt
+          # 清理feeds缓存
+          rm -rf ./feeds
+          ./scripts/feeds clean
+          ./scripts/feeds update -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 更新失败"
+            cat feeds/update.log  # 输出更新日志
+            exit 1
+          fi
+          ./scripts/feeds install -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 安装失败"
+            cat feeds/install.log  # 输出安装日志
+            exit 1
+          fi
+          make defconfig
+          if [ $? -ne 0 ]; then
+            echo "make defconfig 失败"
+            exit 1
+          fi
+
       - name: 检查目录是否生成
         run: |
           cd openwrt
@@ -108,39 +176,7 @@ jobs:
             echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录未生成"
             exit 1
           fi
-     
-      - name: 运行diy-part1.sh
-        run: |
-          cd openwrt
-          chmod +x ../diy-part1.sh
-          ../diy-part1.sh
-          if [ $? -ne 0 ]; then
-            echo "diy-part1.sh 运行失败"
-            exit 1
-          fi
-
-      - name: 复制文件前检查
-        run: |
-          cd openwrt
-          if [ ! -d "staging_dir/target-x86_64_musl/root-x86/boot" ]; then
-            echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录不存在"
-            exit 1
-          fi
-          if [ ! -f "staging_dir/target-x86_64_musl/image/grub2/bootia32.efi" ]; then
-            echo "错误: staging_dir/target-x86_64_musl/image/grub2/bootia32.efi 文件不存在"
-            exit 1
-          fi
     
-      - name: 运行diy-part2.sh
-        run: |
-          cd openwrt
-          chmod +x ../diy-part2.sh  
-          ../diy-part2.sh
-          if [ $? -ne 0 ]; then
-            echo "diy-part2.sh 运行失败"
-            exit 1
-          fi
-
       - name: SSH远程连接（make menuconfig）
         if: github.event.inputs.SSH_ACTION == 'true'
         uses: mxschmitt/action-tmate@v3
