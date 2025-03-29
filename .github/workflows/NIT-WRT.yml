@@ -60,6 +60,7 @@ jobs:
         
       - name: 克隆源代码
         run: |
+          rm -rf openwrt
           git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
           cd openwrt
           # 根据设备架构选择正确的配置文件路径
@@ -71,6 +72,33 @@ jobs:
             cp -r ../configs/r3g/feeds.conf.default .
           fi
       
+      - name: 更新feeds和安装依赖
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 更新失败"
+            exit 1
+          fi
+          ./scripts/feeds install -a
+          if [ $? -ne 0 ]; then
+            echo "feeds 安装失败"
+            exit 1
+          fi
+          make defconfig
+          if [ $? -ne 0 ]; then
+            echo "make defconfig 失败"
+            exit 1
+          fi
+      
+      - name: 检查目录是否生成
+        run: |
+          cd openwrt
+          if [ ! -d "staging_dir/target-x86_64_musl/root-x86/boot" ]; then
+            echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录未生成"
+            exit 1
+          fi
+     
       - name: 运行diy-part1.sh
         run: |
           cd openwrt
