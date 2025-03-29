@@ -52,6 +52,7 @@ jobs:
       - name: 建立环境
         run: |
           sudo apt-get update
+          sudo apt-get upgrade -y  # 更新已安装的包
           sudo apt-get install -y build-essential libncurses-dev make4.1+ perl python3.7+ which grep libc-dev asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc-s1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
           if [ $? -ne 0 ]; then
             echo "依赖安装失败"
@@ -60,7 +61,6 @@ jobs:
         
       - name: 克隆源代码
         run: |
-          rm -rf openwrt
           git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
           cd openwrt
           # 根据设备架构选择正确的配置文件路径
@@ -71,18 +71,28 @@ jobs:
             cp -r ../configs/r3g/.config .
             cp -r ../configs/r3g/feeds.conf.default .
           fi
-      
+          # 输出配置文件内容进行检查
+          echo ".config 文件内容:"
+          cat .config
+          echo "feeds.conf.default 文件内容:"
+          cat feeds.conf.default
+    
       - name: 更新feeds和安装依赖
         run: |
           cd openwrt
+          # 清理feeds缓存
+          rm -rf ./feeds
+          ./scripts/feeds clean
           ./scripts/feeds update -a
           if [ $? -ne 0 ]; then
             echo "feeds 更新失败"
+            cat feeds/update.log  # 输出更新日志
             exit 1
           fi
           ./scripts/feeds install -a
           if [ $? -ne 0 ]; then
             echo "feeds 安装失败"
+            cat feeds/install.log  # 输出安装日志
             exit 1
           fi
           make defconfig
@@ -90,7 +100,7 @@ jobs:
             echo "make defconfig 失败"
             exit 1
           fi
-      
+                
       - name: 检查目录是否生成
         run: |
           cd openwrt
