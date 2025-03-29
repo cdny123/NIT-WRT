@@ -81,6 +81,18 @@ jobs:
             exit 1
           fi
 
+      - name: 复制文件前检查
+        run: |
+          cd openwrt
+          if [ ! -d "staging_dir/target-x86_64_musl/root-x86/boot" ]; then
+            echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录不存在"
+            exit 1
+          fi
+          if [ ! -f "staging_dir/target-x86_64_musl/image/grub2/bootia32.efi" ]; then
+            echo "错误: staging_dir/target-x86_64_musl/image/grub2/bootia32.efi 文件不存在"
+            exit 1
+          fi
+    
       - name: 运行diy-part2.sh
         run: |
           cd openwrt
