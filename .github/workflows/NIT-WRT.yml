@@ -169,17 +169,12 @@ jobs:
             exit 1
           fi
 
-      - name: 检查目录是否生成
+      - name: 创建必要的目录
         run: |
           cd openwrt
-          if [ ! -d "staging_dir/target-x86_64_musl/root-x86/boot" ]; then
-            echo "错误: staging_dir/target-x86_64_musl/root-x86/boot 目录未生成，手动创建中..."
-            mkdir -p staging_dir/target-x86_64_musl/root-x86/boot
-          fi
-          if [ ! -d "staging_dir/target-x86_64_musl/image/grub2" ]; then
-            echo "错误: staging_dir/target-x86_64_musl/image/grub2 目录未生成，手动创建中..."
-            mkdir -p staging_dir/target-x86_64_musl/image/grub2
-          fi
+          mkdir -p staging_dir/target-x86_64_musl/root-x86/boot
+          mkdir -p staging_dir/target-x86_64_musl/image/grub2
+          touch staging_dir/target-x86_64_musl/image/grub2/bootia32.efi
     
       - name: SSH远程连接（make menuconfig）
         if: github.event.inputs.SSH_ACTION == 'true'
