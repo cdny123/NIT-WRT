@@ -19,7 +19,6 @@ on:
         options:
           - x86_64
           - r3g
-      
       SSH_ACTION:
         description: '启用SSH调试（需要手动确认）'
         required: false 
@@ -220,8 +219,8 @@ jobs:
           path: openwrt/build.log
 
       - name: 打包上传固件
-        uses: actions/upload-artifact@main
-        if: steps.organize.outputs.status == 'success' && !cancelled()
+        uses: actions/upload-artifact@v2
+        if: always()
         with:
           name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
           path: ${{ env.FIRMWARE }}
