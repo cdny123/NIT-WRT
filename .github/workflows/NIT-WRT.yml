@@ -1,249 +1,189 @@
-name: NIT-WRT
 
+name: NIT-WRT
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: '选择编译分支'
+      REPO_BRANCH:
+        description: '（官方源码）请选择源码分支'
         required: true
         default: 'openwrt-24.10'
         type: choice
         options:
-          - openwrt-24.10
-          - openwrt-23.05
-      device:
-        description: '选择设备架构'
+          - 'openwrt-24.10'
+          - 'openwrt-23.05'
+          - 'openwrt-22.03'
+          - 'openwrt-21.02'
+          - 'openwrt-19.07'
+          - 'master'
+          - 'main'
+      CONFIG_FILE:
+        description: '请选择配置文件'
         required: true
         default: 'x86_64'
         type: choice
         options:
-          - x86_64
-          - r3g
+          - 'XiaoMi_R3G'
+          - 'x86_64'
+      RETAIN_MINUTE:
+        description: '清理[X]分钟之后的所有操作记录(最低30)'
+        required: true
+        default: '10080'
       SSH_ACTION:
-        description: '启用SSH调试（需要手动确认）'
-        required: false 
-        default: false
+        description: 'SSH远程配置固件'
+        required: false
+        default: 'false'
         type: boolean
+      UPLOAD_FIRMWARE:
+        description: '上传固件到 Github Artifacts'
+        required: false
+        default: 'true'
+        type: boolean
+      UPLOAD_RELEASE:
+        description: '发布固件到 Github Releases'
+        required: false
+        default: 'false'
+        type: boolean
+      CACHEWRTBUILD_SWITCH:
+        description: '缓存加速编译'
+        required: false
+        default: 'true'
+        type: boolean
+      COMPILATION_INFORMATION:
+        description: '是否显示编译信息'
+        required: false
+        default: 'true'
+        type: boolean
+
+
+# 定时触发开启开始编译(把下面两个#去掉开启,时间设置请看定时开启编译说明)
+#  schedule:
+#   - cron: 35 18 * * *
+
+env:
+  GITHUB_LINK: https://github.com/${{github.repository}}
+  GIT_ACTOR: ${{github.actor}}
+  GIT_REPOSITORY: ${{github.repository}}
+  RUN_NUMBER: ${{github.run_number}}
+  RUN_WORKFLOW: ${{github.workflow}}
+  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+  TZ: Asia/Shanghai
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: 启动"${{ matrix.target }}-${{ github.event.inputs.REPO_BRANCH }}"触发编译
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+    
+    env:
+      FOLDER_NAME: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Official]
+        
+        # 请勿对 target: [Official] 做任何修改
+        
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: 清理磁盘空间
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true        
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-        
-      - name: 检查磁盘空间
-        run: df -h
-
-      - name: 检查内存使用情况
-        run: free -h
-        
-      - name: 建立环境
-        run: |
-          sudo apt-get update
-          sudo apt-get upgrade -y  # 更新已安装的包
-          sudo apt-get install -y build-essential libncurses-dev make4.1+ perl python3.7+ which grep libc-dev asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc-s1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-          if [ $? -ne 0 ]; then
-            echo "依赖安装失败"
-            exit 1
-          fi
-        
-      - name: 检查磁盘空间
-        run: |
-          DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
-          if [ $DISK_USAGE -gt 90 ]; then
-            echo "磁盘空间不足，当前使用率: $DISK_USAGE%"
-            exit 1
-          fi
-      
-      - name: 克隆源代码
-        run: |
-          MAX_ATTEMPTS=3
-          ATTEMPT=0
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            rm -rf openwrt
-            git clone --depth 1 -b ${{ github.event.inputs.branch }} https://github.com/openwrt/openwrt openwrt
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            ATTEMPT=$((ATTEMPT + 1))
-            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
-              echo "克隆失败，第 $ATTEMPT 次重试..."
-              sleep 5
-            fi
-          done
-          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-            echo "克隆失败，达到最大重试次数"
-            exit 1
-          fi
-          cd openwrt
-          # 根据设备架构选择正确的配置文件路径
-          if [ "${{ github.event.inputs.device }}" == "x86_64" ]; then
-            cp -r ../configs/x86_64/.config .
-            cp -r ../configs/x86_64/feeds.conf.default .
-          elif [ "${{ github.event.inputs.device }}" == "r3g" ]; then
-            cp -r ../configs/r3g/.config .
-            cp -r ../configs/r3g/feeds.conf.default .
-          fi
+    - name: 密匙检测（密匙为空则退出）
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        if [[ -z "${{ secrets.REPO_TOKEN }}" ]]; then
+          echo "您没有设置仓库密匙，请按教程设置好密匙再来"
+          echo "REPO_TOKEN密匙制作教程：https://git.io/jm.md"
+          exit 1
+        fi
     
-      - name: 更新feeds和安装依赖
-        run: |
-          cd openwrt
-          # 清理feeds缓存
-          rm -rf ./feeds
-          ./scripts/feeds clean
-          ./scripts/feeds update -a
-          if [ $? -ne 0 ]; then
-            echo "feeds 更新失败"
-            cat feeds/update.log  # 输出更新日志
-            exit 1
-          fi
-          ./scripts/feeds install -a
-          if [ $? -ne 0 ]; then
-            echo "feeds 安装失败"
-            cat feeds/install.log  # 输出安装日志
-            exit 1
-          fi
-          make defconfig
-          if [ $? -ne 0 ]; then
-            echo "make defconfig 失败"
-            exit 1
-          fi
-          
-      - name: 运行diy-part1.sh
-        run: |
-          cd openwrt
-          chmod +x ../diy-part1.sh
-          echo "开始执行 diy-part1.sh"
-          ../diy-part1.sh
-          if [ $? -ne 0 ]; then
-            echo "diy-part1.sh 运行失败"
-            exit 1
-          fi
-          echo "diy-part1.sh 执行完成"
+    - name: 准备结束
+      uses: actions/checkout@v4
 
-      - name: 运行diy-part2.sh
-        run: |
-          cd openwrt
-          chmod +x ../diy-part2.sh
-          echo "开始执行 diy-part2.sh"
-          ../diy-part2.sh
-          if [ $? -ne 0 ]; then
-            echo "diy-part2.sh 运行失败"
-            exit 1
-          fi
-          echo "diy-part2.sh 执行完成"
-
-      - name: 更新feeds和安装依赖
-        run: |
-          cd openwrt
-          # 清理feeds缓存
-          rm -rf ./feeds
-          ./scripts/feeds clean
-          ./scripts/feeds update -a
-          if [ $? -ne 0 ]; then
-            echo "feeds 更新失败"
-            cat feeds/update.log  # 输出更新日志
-            exit 1
-          fi
-          ./scripts/feeds install -a
-          if [ $? -ne 0 ]; then
-            echo "feeds 安装失败"
-            cat feeds/install.log  # 输出安装日志
-            exit 1
-          fi
-          make defconfig
-          if [ $? -ne 0 ]; then
-            echo "make defconfig 失败"
-            exit 1
-          fi
-
-      - name: 创建必要的目录
-        run: |
-          cd openwrt
-          mkdir -p staging_dir/target-x86_64_musl/root-x86/boot
-          mkdir -p staging_dir/target-x86_64_musl/image/grub2
-          touch staging_dir/target-x86_64_musl/image/grub2/bootia32.efi
+    - name: 部署编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -qq update -y
+        sudo -E apt-get -qq install -y gawk git gettext libssl-dev xsltproc zip git-core wget curl grep python2.7 python3 python3-pip libpython3-dev
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /${{ env.DIY_WORK }}
+        sudo chown $USER:$GROUPS /${{ env.DIY_WORK }}
     
-      - name: SSH远程连接（make menuconfig）
-        if: github.event.inputs.SSH_ACTION == 'true'
-        uses: mxschmitt/action-tmate@v3
-        with:
-          run: sleep infinity
-      
-      - name: 更新feeds和安装依赖
-        run: |
-          cd openwrt
-          ./scripts/feeds update -a
-          if [ $? -ne 0 ]; then
-            echo "feeds 更新失败"
-            exit 1
-          fi
-          ./scripts/feeds install -a
-          if [ $? -ne 0 ];then
-            echo "feeds 安装失败"
-            exit 1
-          fi
-          make defconfig
-          if [ $? -ne 0 ]; then
-            echo "make defconfig 失败"
-            exit 1
-          fi
-            
-      - name: 编译固件
-        id: compile
-        run: |
-          cd openwrt
-          make V=s -j2 > build.log
-          if [ $? -ne 0 ]; then
-            echo 'Build failed'
-            cat build.log
-            exit 1
-          fi
+    - name: 下载"${{ matrix.target }}-${{ github.event.inputs.REPO_BRANCH }}"源码
+      working-directory: /${{ env.DIY_WORK }}
+      run: |
+        git clone -b "${REPO_BRANCH}" --single-branch "${REPO_URL}" openwrt
+        ln -sf /${{ env.DIY_WORK }}/openwrt ${GITHUB_WORKSPACE}/openwrt
+        cp -Rf ${GITHUB_WORKSPACE}/build ${GITHUB_WORKSPACE}/openwrt/build
+        chmod -R +x ${GITHUB_WORKSPACE}/openwrt/build
+    
+    - name: 更新插件源
+      if: env.REPO_TOKEN
+      run: |
+        cd openwrt
+        source ${GITHUB_WORKSPACE}/configs/x86_64
+         
+    - name: 加载自定义设置
+      if: env.REPO_TOKEN
+      run: |
+        cd openwrt
+        source ${GITHUB_WORKSPACE}/diy-part1.sh
+        source ${GITHUB_WORKSPACE}/diy-part2.sh
+        
+    - name: 安装插件源
+      if: env.REPO_TOKEN
+      run: |
+        cd openwrt
+        source ${GITHUB_WORKSPACE}/diy-part1.sh
+    
+    - name: SSH远程连接（make menuconfig）
+      if: env.SSH_ACTION == 'true'
+      uses: danshui-git/debugger-action@main
 
-      - name: 上传生成日志
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: openwrt/build.log
-
-      - name: 打包上传固件
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: NIT-WRT${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-          path: ${{ env.FIRMWARE }}
-
-      - name: 创建发布标签
-        id: tag
-        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-        run: |
-          echo "release_tag=${{ env.TAG_TIME }}" >> $GITHUB_OUTPUT
-          touch release.txt
-          echo "NIT-WRT X86_64（支持ipv6）" >> release.txt
-          echo "管理地址：192.168.6.1" >> release.txt
-          echo "默认密码：无密码" >> release.txt
-          echo "插件清单：Dockerman, AdGuardHome, OpenClash, Lucky等" >> release.txt
-          echo "status=success" >> $GITHUB_OUTPUT
-     
-      - name: 发布新版固件
-        uses: softprops/action-gh-release@v2
-        if: steps.tag.outputs.status == 'success' && !cancelled()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          name: ${{ env.FILE_TIME }} - NIT-WRT
-          tag_name: ${{ steps.tag.outputs.release_tag }}
-          body_path: release.txt
-          files: ${{ env.FIRMWARE }}/*
+    - name: 生成"${{ matrix.target }}"配置文件
+      if: env.REPO_TOKEN
+      id: compile
+      run: |
+        cd openwrt
+        source ${GITHUB_WORKSPACE}/configs/x86_64/.config
+        
+    - name: 上传"${{ matrix.target }}"配置文件在 Github Artifacts
+      if: steps.compile.outcome == 'success'
+      uses: actions/upload-artifact@main
+      with:
+        name: .config_${{ env.SOURCE }}_${{ env.LUCI_EDITION }}_${{ env.TARGET_PROFILE }}_${{ env.Firmware_Date }}
+        path: openwrt/build_logo/config.txt
+        
+    - name: 编译信息
+      continue-on-error: true
+      if: env.COMPILATION_INFORMATION == 'true'
+      run: |
+        cd openwrt
+        source ${BUILD_PATH}/common.sh && Diy_xinxi
+    
+    - name: 清理Actions空间
+      continue-on-error: true
+      if: env.REPO_TOKEN
+      uses: small-5/delete-workflow-runs@main
+      with:
+        token: ${{ secrets.REPO_TOKEN }}
+        repository: ${{ github.repository }}
+        retain_min: ${{ env.RETAIN_MINUTE }}
+    
+    - name: 清理releases
+      continue-on-error: true
+      if: env.REPO_TOKEN
+      uses: ophub/delete-releases-workflows@main
+      with:
+        delete_releases: true
+        releases_keep_keyword: targz/Update
+        releases_keep_latest: ${{ env.KEEP_LATEST }}
+        delete_tags: true
+        delete_workflows: false
+        workflows_keep_day: 90
+        gh_token: ${{ secrets.REPO_TOKEN }}
+        
+    - name: 触发启动"${{ matrix.target }}"开始编译
+      id: gitpush
+      if: steps.compile.outcome == 'success' && env.REPO_TOKEN
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        source ${BUILD_PATH}/common.sh && build_openwrt
+        
